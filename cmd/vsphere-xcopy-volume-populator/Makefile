@@ -29,13 +29,31 @@ vet:
 test: fmt vet
 	go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
+.PHONY: test-e2e
+test-e2e: build
+	@echo "Running E2E tests..."
+	@echo "Checking required environment variables..."
+	@if [ -z "$$VMWARE_PROVIDER_NAME" ]; then echo "ERROR: VMWARE_PROVIDER_NAME is not set"; exit 1; fi
+	@if [ -z "$$VMWARE_URL" ]; then echo "ERROR: VMWARE_URL is not set"; exit 1; fi
+	@if [ -z "$$VMWARE_USERNAME" ]; then echo "ERROR: VMWARE_USERNAME is not set"; exit 1; fi
+	@if [ -z "$$VMWARE_PASSWORD" ]; then echo "ERROR: VMWARE_PASSWORD is not set"; exit 1; fi
+	@if [ -z "$$SOURCE_DATASTORE" ]; then echo "ERROR: SOURCE_DATASTORE is not set"; exit 1; fi
+	@if [ -z "$$SOURCE_VM_NAME" ]; then echo "ERROR: SOURCE_VM_NAME is not set"; exit 1; fi
+	@if [ -z "$$TARGET_STORAGE_CLASS" ]; then echo "ERROR: TARGET_STORAGE_CLASS is not set"; exit 1; fi
+	@if [ -z "$$STORAGE_VENDOR_PRODUCT" ]; then echo "ERROR: STORAGE_VENDOR_PRODUCT is not set"; exit 1; fi
+	@if [ -z "$$STORAGE_SECRET_NAME" ]; then echo "ERROR: STORAGE_SECRET_NAME is not set"; exit 1; fi
+	@if [ -z "$$TARGET_NAMESPACE" ]; then echo "ERROR: TARGET_NAMESPACE is not set"; exit 1; fi
+	@if [ -z "$$KUBECONFIG" ] && [ ! -f "$$HOME/.kube/config" ]; then echo "ERROR: KUBECONFIG is not set and default kubeconfig not found"; exit 1; fi
+	@echo "All required environment variables are set."
+	@echo "Running E2E test: Migrate a thin disk VM..."
+	go test ./e2e -v
+
 .PHONY: generate 
 generate:
 	go generate ./...
 
 .PHONY: build
 build: fmt vet
-	PATH=$(PATH) \
 	go build \
 	-ldflags="w -s -X github.com/kubev2v/forklift/cmd/vsphere-xcopy-volume-populator/internal/populator.VibVersion=$(VIB_VERSION)" \
 	-o bin/vsphere-xcopy-volume-populator
