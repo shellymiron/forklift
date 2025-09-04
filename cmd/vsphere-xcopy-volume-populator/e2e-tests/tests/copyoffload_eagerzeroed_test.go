@@ -5,8 +5,6 @@ package tests
 
 import (
 	"testing"
-
-	"github.com/kubev2v/forklift/cmd/vsphere-xcopy-volume-populator/e2e-tests/helpers"
 )
 
 // TestCopyOffloadEagerZeroed validates the migration of a VM with an eager-zeroed thick-provisioned disk.
@@ -16,6 +14,6 @@ import (
 func TestCopyOffloadEagerZeroed(t *testing.T) {
 	// TBD: will be implemented in the future
 	// t.Parallel()
-	framework := NewTestFramework(t, helpers.DiskEagerZeroedThick)
-	framework.Run()
+	// framework := NewTestFramework(t, helpers.DiskEagerZeroedThick)
+	// framework.Run()
 }

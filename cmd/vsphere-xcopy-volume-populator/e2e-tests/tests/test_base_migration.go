@@ -930,6 +930,41 @@ Disk Type: %s
 	// Save detailed summary to logs
 	test.saveSummaryToFile(summaryContent)
 
+	// Generate JUnit XML report
+	diskType := ""
+	if test.Config != nil {
+		diskType = test.Config.VMDiskType
+	}
+
+	// Convert TestResults to the format expected by helpers package
+	var junitResults []*helpers.TestResult
+	for _, result := range resultsCopy {
+		// Convert TestSteps
+		var junitSteps []*helpers.TestStep
+		for _, step := range result.Steps {
+			junitSteps = append(junitSteps, &helpers.TestStep{
+				Name:     step.Name,
+				Status:   step.Status,
+				Duration: step.Duration,
+				Message:  step.Message,
+			})
+		}
+
+		// Convert TestResult
+		junitResults = append(junitResults, &helpers.TestResult{
+			Name:     result.Name,
+			Status:   result.Status,
+			Duration: result.Duration,
+			Steps:    junitSteps,
+		})
+	}
+
+	if err := helpers.GenerateJUnitReport(test.T.Name(), test.vmName, diskType, test.startTime, junitResults); err != nil {
+		test.T.Logf("Warning: Failed to generate JUnit XML report: %v", err)
+	} else {
+		test.T.Logf("JUnit XML report generated successfully")
+	}
+
 	if failedCount > 0 {
 		test.T.Fail()
 	}
